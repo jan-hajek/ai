@@ -32,10 +32,10 @@ func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, err
 			imagePath: image.FileName,
 			coords: []coords{
 				{
-					x1:     0,
-					x2:     0,
-					x3:     0,
-					x4:     0,
+					x:      0,
+					y:      0,
+					width:  0,
+					height: 0,
 					number: 0,
 				},
 			},

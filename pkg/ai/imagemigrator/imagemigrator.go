@@ -11,8 +11,8 @@ type ImageMigrator struct {
 }
 
 func NewImageMigrator(
-	origDataDir string,
 	annotationFileName string,
+	origDataDir string,
 	migratedDataDir string,
 ) *ImageMigrator {
 	return &ImageMigrator{
@@ -29,7 +29,7 @@ func (i *ImageMigrator) Migrate(ctx context.Context) error {
 	}
 
 	for _, input := range inputs {
-		err := i.extractImages(ctx, input)
+		_, err := i.extractImages(ctx, input)
 		if err != nil {
 			return err
 		}

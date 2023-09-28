@@ -23,7 +23,7 @@ func main() {
 	migratedDataDir := path.Join(dir, "data", "origdata")
 	annotationFileName := "_annotations.coco.json"
 
-	migrator := imagemigrator.NewImageMigrator(origDataDir, annotationFileName, migratedDataDir)
+	migrator := imagemigrator.NewImageMigrator(annotationFileName, origDataDir, migratedDataDir)
 
 	err = migrator.Migrate(ctx)
 	if err != nil {
