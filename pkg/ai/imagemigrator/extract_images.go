@@ -8,12 +8,11 @@ import (
 	"os"
 	"path"
 
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type extractImagesInput struct {
-	imagePath string
+	imageName string
 	coords    []coords
 }
 
@@ -28,16 +27,16 @@ type SubImager interface {
 }
 
 func (i *ImageMigrator) extractImages(ctx context.Context, input extractImagesInput) (paths []string, err error) {
-	img, err := openImage(input.imagePath)
+	img, err := openImage(path.Join(i.origDataDir, input.imageName))
 	if err != nil {
 		return nil, err
 	}
 
-	for _, c := range input.coords {
-		name := fmt.Sprintf("%s-%d.jpg", uuid.New().String(), c.number)
+	for index, c := range input.coords {
+		name := fmt.Sprintf("%s-%d-%d.jpg", input.imageName, index, c.number)
 		destImagePath := path.Join(i.migratedDataDir, name)
 
-		cropSize :=  image.Rect(0, 0, c.width, c.height)
+		cropSize := image.Rect(0, 0, c.width, c.height)
 		cropSize = cropSize.Add(image.Point{X: c.x, Y: c.y})
 		croppedImage := img.(SubImager).SubImage(cropSize)
 

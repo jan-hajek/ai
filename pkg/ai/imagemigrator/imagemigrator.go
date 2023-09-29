@@ -2,6 +2,7 @@ package imagemigrator
 
 import (
 	"context"
+	"fmt"
 )
 
 type ImageMigrator struct {
@@ -28,12 +29,16 @@ func (i *ImageMigrator) Migrate(ctx context.Context) error {
 		return err
 	}
 
+	createdImages := 0
 	for _, input := range inputs {
-		_, err := i.extractImages(ctx, input)
+		imagesNames, err := i.extractImages(ctx, input)
 		if err != nil {
 			return err
 		}
+		createdImages += len(imagesNames)
 	}
+
+	fmt.Println("Created images: ", createdImages)
 
 	return nil
 }
