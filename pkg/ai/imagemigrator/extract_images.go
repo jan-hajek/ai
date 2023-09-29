@@ -37,7 +37,7 @@ func (i *ImageMigrator) extractImages(ctx context.Context, input extractImagesIn
 		name := fmt.Sprintf("%s-%d.jpg", uuid.New().String(), c.number)
 		destImagePath := path.Join(i.migratedDataDir, name)
 
-		cropSize := image.Rect(0, 0, c.width, c.height)
+		cropSize :=  image.Rect(0, 0, c.width, c.height)
 		cropSize = cropSize.Add(image.Point{X: c.x, Y: c.y})
 		croppedImage := img.(SubImager).SubImage(cropSize)
 

@@ -6,11 +6,13 @@ import (
 	"io"
 	"os"
 	"path"
+	"strconv"
 	"time"
 )
 
 func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, error) {
-	jsonFile, err := os.Open(path.Join(i.origDataDir, i.annotationFileName))
+	jsonFileName := "_annotations.coco.json"
+	jsonFile, err := os.Open(path.Join(i.origDataDir+jsonFileName, i.annotationFileName))
 	if err != nil {
 		return nil, err
 	}
@@ -27,19 +29,38 @@ func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, err
 
 	result := []extractImagesInput{}
 
+	catDict := make(map[int]int)
+
+	for _, imageCat := range annotation.Categories {
+		num, err := strconv.Atoi(imageCat.Name)
+		if err != nil {
+			if num < 10 {
+				catDict[imageCat.Id] = num
+			}
+		}
+	}
+
+	annDict := make(map[int][]coords)
+
+	for _, imageAnn := range annotation.Annotations {
+		if num, exists := catDict[imageAnn.CategoryId]; exists {
+			annDict[imageAnn.ImageId] = append(annDict[imageAnn.ImageId], coords{
+				x:      imageAnn.Bbox[0],
+				y:      imageAnn.Bbox[1],
+				width:  imageAnn.Bbox[2],
+				height: imageAnn.Bbox[3],
+				number: num,
+			})
+		}
+	}
+
 	for _, image := range annotation.Images {
-		result = append(result, extractImagesInput{
-			imagePath: image.FileName,
-			coords: []coords{
-				{
-					x:      0,
-					y:      0,
-					width:  0,
-					height: 0,
-					number: 0,
-				},
-			},
-		})
+		if _, exists := annDict[image.Id]; exists {
+			result = append(result, extractImagesInput{
+				imagePath: image.FileName,
+				coords:    annDict[image.Id],
+			})
+		}
 	}
 
 	return result, nil
