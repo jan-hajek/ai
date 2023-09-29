@@ -12,7 +12,7 @@ import (
 
 func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, error) {
 	jsonFileName := "_annotations.coco.json"
-	jsonFile, err := os.Open(path.Join(i.origDataDir+jsonFileName, i.annotationFileName))
+	jsonFile, err := os.Open(path.Join(i.origDataDir+"/"+jsonFileName, i.annotationFileName))
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, err
 	for _, image := range annotation.Images {
 		if _, exists := annDict[image.Id]; exists {
 			result = append(result, extractImagesInput{
-				imagePath: image.FileName,
+				imagePath: i.origDataDir+"/"+image.FileName,
 				coords:    annDict[image.Id],
 			})
 		}
