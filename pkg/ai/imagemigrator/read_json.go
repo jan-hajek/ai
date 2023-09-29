@@ -10,17 +10,16 @@ import (
 )
 
 func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, error) {
-	jsonFile, err := os.Open(path.Join(i.origDataDir, i.annotationFileName))
+	annotationFile, err := os.Open(path.Join(i.sourceDir, i.annotationFileName))
 	if err != nil {
 		return nil, err
 	}
-	defer jsonFile.Close()
+	defer annotationFile.Close()
 
-	byteValue, _ := io.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(annotationFile)
 
-	var annotation Annotation
-
-	err = json.Unmarshal(byteValue, &annotation)
+	var annotationStruct Annotation
+	err = json.Unmarshal(byteValue, &annotationStruct)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +27,7 @@ func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, err
 	result := []extractImagesInput{}
 
 	catDict := make(map[int]int)
-
-	for _, imageCat := range annotation.Categories {
+	for _, imageCat := range annotationStruct.Categories {
 		num, err := strconv.Atoi(imageCat.Name)
 		if err == nil {
 			if num < 10 {
@@ -39,8 +37,7 @@ func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, err
 	}
 
 	annDict := make(map[int][]coords)
-
-	for _, imageAnn := range annotation.Annotations {
+	for _, imageAnn := range annotationStruct.Annotations {
 		if num, exists := catDict[imageAnn.CategoryId]; exists {
 			annDict[imageAnn.ImageId] = append(annDict[imageAnn.ImageId], coords{
 				x:      int(imageAnn.Bbox[0]),
@@ -52,7 +49,7 @@ func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, err
 		}
 	}
 
-	for _, image := range annotation.Images {
+	for _, image := range annotationStruct.Images {
 		if _, exists := annDict[image.Id]; exists {
 			result = append(result, extractImagesInput{
 				imageName: image.FileName,

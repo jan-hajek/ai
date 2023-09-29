@@ -27,14 +27,14 @@ type SubImager interface {
 }
 
 func (i *ImageMigrator) extractImages(ctx context.Context, input extractImagesInput) (paths []string, err error) {
-	img, err := openImage(path.Join(i.origDataDir, input.imageName))
+	img, err := openImage(path.Join(i.sourceDir, input.imageName))
 	if err != nil {
 		return nil, err
 	}
 
 	for index, c := range input.coords {
 		name := fmt.Sprintf("%s-%d-%d.jpg", input.imageName, index, c.number)
-		destImagePath := path.Join(i.migratedDataDir, name)
+		destImagePath := path.Join(i.targetDir, name)
 
 		cropSize := image.Rect(0, 0, c.width, c.height)
 		cropSize = cropSize.Add(image.Point{X: c.x, Y: c.y})

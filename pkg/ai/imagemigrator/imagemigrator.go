@@ -6,20 +6,20 @@ import (
 )
 
 type ImageMigrator struct {
-	origDataDir        string
 	annotationFileName string
-	migratedDataDir    string
+	sourceDir          string
+	targetDir          string
 }
 
 func NewImageMigrator(
 	annotationFileName string,
-	origDataDir string,
-	migratedDataDir string,
+	sourceDir string,
+	targetDir string,
 ) *ImageMigrator {
 	return &ImageMigrator{
-		origDataDir:        origDataDir,
+		sourceDir:          sourceDir,
 		annotationFileName: annotationFileName,
-		migratedDataDir:    migratedDataDir,
+		targetDir:          targetDir,
 	}
 }
 

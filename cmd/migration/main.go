@@ -21,19 +21,31 @@ func main() {
 
 	annotationFileName := "_annotations.coco.json"
 
-	dirs := []string{
-		"test",
-		"train",
-		"valid",
+	dirs := []struct {
+		sourceDir string
+		targetDir string
+	}{
+		{
+			sourceDir: "test",
+			targetDir: "test",
+		},
+		{
+			sourceDir: "train",
+			targetDir: "train",
+		},
+		{
+			sourceDir: "valid",
+			targetDir: "valid",
+		},
 	}
 
 	for _, dir := range dirs {
-		fmt.Println("processing dir: " + dir)
+		fmt.Println("processing dir: " + dir.sourceDir)
 
-		origDataDir := path.Join(rootDir, "data", "origdata", dir)
-		migratedDataDir := path.Join(rootDir, "data", "migrateddata", dir)
+		sourceDir := path.Join(rootDir, "data", "origdata", dir.sourceDir)
+		targetDir := path.Join(rootDir, "data", "migrateddata", dir.targetDir)
 
-		migrator := imagemigrator.NewImageMigrator(annotationFileName, origDataDir, migratedDataDir)
+		migrator := imagemigrator.NewImageMigrator(annotationFileName, sourceDir, targetDir)
 
 		err = migrator.Migrate(ctx)
 		if err != nil {
