@@ -17,7 +17,7 @@ func TestExtractImage(t *testing.T) {
 	annotationFileName := ""
 
 	input := extractImagesInput{
-		imagePath: path.Join(origDataDir, "936.jpg"),
+		imageName: "936.jpg",
 		coords: []coords{
 			{x: 140, y: 27, width: 22, height: 31, number: 9},
 			{x: 216, y: 23, width: 22, height: 35, number: 3},

@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"image"
-	"image/jpeg"
-	"os"
 	"path"
 
-	"github.com/pkg/errors"
+	"github.com/jelito/ai/pkg/ai/imagex"
 )
 
 type extractImagesInput struct {
@@ -27,7 +25,7 @@ type SubImager interface {
 }
 
 func (i *ImageMigrator) extractImages(ctx context.Context, input extractImagesInput) (paths []string, err error) {
-	img, err := openImage(path.Join(i.sourceDir, input.imageName))
+	img, err := imagex.OpenImage(path.Join(i.sourceDir, input.imageName))
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +38,7 @@ func (i *ImageMigrator) extractImages(ctx context.Context, input extractImagesIn
 		cropSize = cropSize.Add(image.Point{X: c.x, Y: c.y})
 		croppedImage := img.(SubImager).SubImage(cropSize)
 
-		err = saveImage(croppedImage, destImagePath)
+		err = imagex.SaveJpegImage(croppedImage, destImagePath)
 		paths = append(paths, destImagePath)
 		if err != nil {
 			return nil, err
@@ -48,34 +46,4 @@ func (i *ImageMigrator) extractImages(ctx context.Context, input extractImagesIn
 	}
 
 	return paths, nil
-}
-
-func openImage(path string) (image.Image, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	defer f.Close()
-	img, format, err := image.Decode(f)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	if format != "jpeg" {
-		return nil, errors.New("it is not jpeg")
-	}
-
-	return img, nil
-}
-
-func saveImage(img image.Image, name string) error {
-	f, err := os.Create(name)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	defer f.Close()
-	err = jpeg.Encode(f, img, nil)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	return nil
 }
