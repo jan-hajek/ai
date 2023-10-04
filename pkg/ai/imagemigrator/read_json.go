@@ -3,7 +3,7 @@ package imagemigrator
 import (
 	"context"
 	"encoding/json"
-	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -16,7 +16,7 @@ func (i *ImageMigrator) readJson(ctx context.Context) ([]extractImagesInput, err
 	}
 	defer annotationFile.Close()
 
-	byteValue, _ := io.ReadAll(annotationFile)
+	byteValue, _ := ioutil.ReadAll(annotationFile)
 
 	var annotationStruct Annotation
 	err = json.Unmarshal(byteValue, &annotationStruct)
