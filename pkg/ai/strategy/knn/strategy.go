@@ -1,8 +1,16 @@
 package knn
 
-type Strategy struct {
+type KnnStrategy struct {
+	sourceDataDir string
+	imageDataPath string
 }
 
-func New() *Strategy {
-	return &Strategy{}
+func New(
+	sourceDataDir string,
+	imageDataPath string,
+) *KnnStrategy {
+	return &KnnStrategy{
+		sourceDataDir: sourceDataDir,
+		imageDataPath: imageDataPath,
+	}
 }
