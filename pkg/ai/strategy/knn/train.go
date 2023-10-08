@@ -11,7 +11,7 @@ import (
 	"github.com/jelito/ai/pkg/ai/strategy"
 )
 
-func (b *Strategy) TrainFiles(ctx context.Context, files []strategy.TrainFile) error {
+func (b *KnnStrategy) TrainFiles(ctx context.Context, files []strategy.TrainFile) error {
 	ch := make(chan *strategy.TrainFile)
 	wg := sync.WaitGroup{}
 	workersCount := 4
@@ -42,7 +42,7 @@ func (b *Strategy) TrainFiles(ctx context.Context, files []strategy.TrainFile) e
 	return nil
 }
 
-func (b *Strategy) getQuadrants(ctx context.Context, file *strategy.TrainFile) ([]int, error) {
+func (b *KnnStrategy) getQuadrants(ctx context.Context, file *strategy.TrainFile) ([]int, error) {
 	img, err := imagex.OpenImage(file.Path)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (b *Strategy) getQuadrants(ctx context.Context, file *strategy.TrainFile) (
 	return []int{1, 2, 3, 4}, nil
 }
 
-func (b *Strategy) splitIntoParts(img image.Image) map[int][]imagex.Pixel {
+func (b *KnnStrategy) splitIntoParts(img image.Image) map[int][]imagex.Pixel {
 	bounds := img.Bounds()
 	width, height := bounds.Max.X, bounds.Max.Y
 

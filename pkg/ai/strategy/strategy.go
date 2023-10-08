@@ -8,6 +8,9 @@ type TrainFile struct {
 }
 
 type Strategy interface {
-	TestFile(path string) (number int, confidence float64, _ error)
-	TrainFiles(context.Context, []TrainFile) error
+	DataExtraction(ctx context.Context) error
+	PrepareSets(ctx context.Context) error
+	TrainAlgorithm(ctx context.Context) error
+	TestAlgorithm(ctx context.Context) error
+	RecognizeImage(path string) (number int, confidence float64, _ error)
 }

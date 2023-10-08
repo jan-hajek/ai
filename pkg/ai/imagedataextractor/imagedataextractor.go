@@ -2,7 +2,10 @@ package imagedataextractor
 
 import (
 	"context"
+	"image"
 	"math"
+
+	"github.com/jelito/ai/pkg/ai/imagex"
 )
 
 type ImageDataExtractor struct {
@@ -10,71 +13,57 @@ type ImageDataExtractor struct {
 	yFieldsCount int
 }
 
-type extractFieldsInput struct {
-	pixels []Pixel
-	length int
-	width  int
-}
-
-type Pixel struct {
-	x int
-	y int
-	R int
-	G int
-	B int
-	A int
+func NewImageDataExtractor(
+	xFieldsCount int,
+	yFieldsCount int,
+) *ImageDataExtractor {
+	return &ImageDataExtractor{xFieldsCount: xFieldsCount, yFieldsCount: yFieldsCount}
 }
 
 type Field struct {
-	x          int
-	y          int
 	pixelCount int
 	colorSum   int
-	colorRatio int
 }
 
-func (i *ImageDataExtractor) ExtractFields(ctx context.Context, input extractFieldsInput) ([][]Field, error) {
-	xBand := float64(input.width / i.xFieldsCount)
-	yBand := float64(input.length / i.yFieldsCount)
+func (i *ImageDataExtractor) ExtractFields(_ context.Context, img image.Image) []float64 {
+	bounds := img.Bounds()
+	width, height := bounds.Max.X, bounds.Max.Y
 
-	xDivs := []int{}
-	yDivs := []int{}
+	fields := make([]Field, i.xFieldsCount*i.yFieldsCount)
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			index := getQuadrantIndex(x, y, width, height, i.xFieldsCount, i.yFieldsCount)
 
-	fields := [][]Field{}
+			pixel := imagex.RgbaToPixel(img.At(x, y).RGBA())
 
-	for j := 1; j <= i.xFieldsCount; j++ {
-		xDivs[j-1] = int(math.Round(float64(j) * xBand))
-		for k := 1; k <= i.yFieldsCount; k++ {
-			yDivs[k-1] = int(math.Round(float64(k) * yBand))
-			fields[j][k] = Field{j, k, 0, 0, 0}
+			fields[index].pixelCount++
+			fields[index].colorSum = fields[index].colorSum + pixel.R + pixel.G + pixel.B
 		}
 	}
 
-	for _, pixel := range i.pixels {
-		xField := 0
-		for ix, xDiv := range xDivs {
-			if pixel.x < xDiv {
-				xField = ix + 1
-			}
-		}
-
-		yField := 0
-		for ix, yDiv := range yDivs {
-			if pixel.y < yDiv {
-				yField = ix + 1
-			}
-		}
-
-		fields[xField-1][yField-1].pixelCount++
-		fields[xField-1][yField-1].colorSum = fields[xField-1][yField-1].colorSum + pixel.r + pixel.g + pixel.b
-	}
-
-	for j := 1; j <= i.xFieldsCount; j++ {
-		for k := 1; k <= i.yFieldsCount; k++ {
-			colorAvg := fields[j][k].colorSum/fields[j][k].pixelCount
-			fields[j][k].colorRatio = colorAvg/(255*3)
+	result := make([]float64, 0, i.xFieldsCount*i.yFieldsCount)
+	for _, field := range fields {
+		if field.pixelCount > 0 {
+			colorAvg := float64(field.colorSum) / float64(field.pixelCount)
+			result = append(result, colorAvg/float64(255*3))
 		}
 	}
 
-	return fields, nil
+	return result
+}
+
+func getQuadrantIndex(x, y, width, height, xFieldsCount, yFieldsCount int) int {
+	if x >= width {
+		panic("x is out of range")
+	}
+	if y >= height {
+		panic("y is out of range")
+	}
+	xCount := float64(width) / float64(xFieldsCount)
+	yCount := float64(height) / float64(yFieldsCount)
+
+	xIndex := int(math.Floor(float64(x) / xCount))
+	yIndex := int(math.Floor(float64(y) / yCount))
+
+	return xIndex + yIndex*yFieldsCount
 }
