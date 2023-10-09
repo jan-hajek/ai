@@ -20,11 +20,11 @@ func (b *RandomStrategy) PrepareSets(ctx context.Context) error {
 	return nil
 }
 
-func (b *RandomStrategy) TrainAlgorithm(ctx context.Context) error {
+func (b *RandomStrategy) TrainModel(ctx context.Context) error {
 	return nil
 }
 
-func (b *RandomStrategy) TestAlgorithm(ctx context.Context) error {
+func (b *RandomStrategy) TestModel(ctx context.Context) error {
 	return nil
 }
 

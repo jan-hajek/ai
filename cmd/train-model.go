@@ -4,9 +4,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var testAlgorithmCmd = &cobra.Command{
-	Use:   "tests-algorithm",
-	Short: "Tests an algorithm",
+var trainAlgorithmCmd = &cobra.Command{
+	Use:   "train-model",
+	Short: "Trains a model",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
 			return err
@@ -21,7 +21,7 @@ var testAlgorithmCmd = &cobra.Command{
 			return err
 		}
 
-		err = s.TestAlgorithm(cmd.Context())
+		err = s.TrainModel(cmd.Context())
 		if err != nil {
 			printErrorWithStack(err)
 			return err
