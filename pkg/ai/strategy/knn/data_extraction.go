@@ -2,59 +2,56 @@ package knn
 
 import (
 	"context"
-	"encoding/csv"
-	"os"
+	"path"
 	"strconv"
 
+	"github.com/jelito/ai/pkg/ai/csvx"
 	"github.com/jelito/ai/pkg/ai/imagedataextractor"
 	"github.com/jelito/ai/pkg/ai/imagex"
 	"github.com/jelito/ai/pkg/ai/osx"
-	"github.com/pkg/errors"
 )
 
 func (b *KnnStrategy) DataExtraction(ctx context.Context) error {
-	ide := imagedataextractor.NewImageDataExtractor(3, 3)
+	ide := imagedataextractor.NewImageDataExtractor(b.settings.ExtraDataXFieldsCount, b.settings.ExtraDataYFieldsCount)
 
-	files, err := osx.GetAllImagesInDir(b.sourceDataDir)
+	files, err := osx.GetAllImagesInDir(b.settings.ExtraDataSourceDir)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
-	file, err := os.Create(b.imageDataPath)
-	defer file.Close()
+	writer, closeFile, err := csvx.OpenFileForWriting(b.settings.ExtractDataDestFilePath)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
-	w := csv.NewWriter(file)
-	defer w.Flush()
+	defer closeFile()
+
+	expectedNumberOfFields := b.settings.ExtraDataXFieldsCount * b.settings.ExtraDataYFieldsCount
+
 	for _, file := range files {
-		img, err := imagex.OpenImage(file.Path)
+		img, err := imagex.OpenImage(path.Join(b.settings.ExtraDataSourceDir, file.Name))
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		fieldsAvgs := ide.ExtractFields(ctx, img)
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
-		columns := []string{
+		if len(fieldsAvgs) != expectedNumberOfFields {
+			continue
+		}
+
+		row := []string{
 			strconv.Itoa(file.Number),
+			file.Name,
 		}
-		columns = append(columns, fieldsAvgsAsStringArray(fieldsAvgs)...)
+		row = append(row, csvx.ConvertFloatsToStrings(fieldsAvgs)...)
 
-		if err := w.Write(columns); err != nil {
-			return errors.WithStack(err)
+		if err := writer(row); err != nil {
+			return err
 		}
 	}
 
 	return nil
-}
-
-func fieldsAvgsAsStringArray(fieldsAvgs []float64) []string {
-	result := make([]string, len(fieldsAvgs))
-	for i, avg := range fieldsAvgs {
-		result[i] = strconv.FormatFloat(avg, 'f', -1, 64)
-	}
-	return result
 }

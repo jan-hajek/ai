@@ -17,9 +17,16 @@ var prepareSetsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		s, err := getStrategyByName(args[0])
 		if err != nil {
+			printErrorWithStack(err)
 			return err
 		}
 
-		return s.PrepareSets(cmd.Context())
+		err = s.PrepareSets(cmd.Context())
+		if err != nil {
+			printErrorWithStack(err)
+			return err
+		}
+
+		return nil
 	},
 }

@@ -1,16 +1,22 @@
 package knn
 
+type Settings struct {
+	ExtraDataSourceDir      string
+	ExtraDataXFieldsCount   int
+	ExtraDataYFieldsCount   int
+	ExtractDataDestFilePath string
+	TestingSetPath          string
+	TrainingSetPath         string
+	TrainingSetRatio        float64
+}
 type KnnStrategy struct {
-	sourceDataDir string
-	imageDataPath string
+	settings Settings
 }
 
 func New(
-	sourceDataDir string,
-	imageDataPath string,
+	settings Settings,
 ) *KnnStrategy {
 	return &KnnStrategy{
-		sourceDataDir: sourceDataDir,
-		imageDataPath: imageDataPath,
+		settings: settings,
 	}
 }
