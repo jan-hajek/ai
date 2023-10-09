@@ -17,9 +17,16 @@ var extractDataCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		s, err := getStrategyByName(args[0])
 		if err != nil {
+			printErrorWithStack(err)
 			return err
 		}
 
-		return s.DataExtraction(cmd.Context())
+		err = s.DataExtraction(cmd.Context())
+		if err != nil {
+			printErrorWithStack(err)
+			return err
+		}
+
+		return nil
 	},
 }

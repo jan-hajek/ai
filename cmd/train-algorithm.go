@@ -17,9 +17,16 @@ var trainAlgorithmCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		s, err := getStrategyByName(args[0])
 		if err != nil {
+			printErrorWithStack(err)
 			return err
 		}
 
-		return s.TrainAlgorithm(cmd.Context())
+		err = s.TrainAlgorithm(cmd.Context())
+		if err != nil {
+			printErrorWithStack(err)
+			return err
+		}
+
+		return nil
 	},
 }

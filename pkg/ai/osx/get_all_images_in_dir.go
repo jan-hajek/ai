@@ -2,7 +2,6 @@ package osx
 
 import (
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -11,7 +10,7 @@ import (
 )
 
 type ImageFile struct {
-	Path   string
+	Name   string
 	Number int
 }
 
@@ -29,7 +28,7 @@ func GetAllImagesInDir(dir string) (paths []ImageFile, _ error) {
 				return nil, errors.Errorf("error parsing number from file name: %s", fileBase)
 			}
 			paths = append(paths, ImageFile{
-				Path:   path.Join(dir, file.Name()),
+				Name:   file.Name(),
 				Number: number,
 			})
 		}
