@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jelito/ai/pkg/ai/strategy"
+	"github.com/jan-hajek/ai/pkg/ai/strategy"
 	"github.com/pkg/errors"
 )
 

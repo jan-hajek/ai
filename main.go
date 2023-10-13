@@ -1,6 +1,6 @@
 package main
 
-import "github.com/jelito/ai/cmd"
+import "github.com/jan-hajek/ai/cmd"
 
 func main() {
 	cmd.Execute()

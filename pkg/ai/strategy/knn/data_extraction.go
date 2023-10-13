@@ -5,10 +5,10 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/jelito/ai/pkg/ai/csvx"
-	"github.com/jelito/ai/pkg/ai/imagedataextractor"
-	"github.com/jelito/ai/pkg/ai/imagex"
-	"github.com/jelito/ai/pkg/ai/osx"
+	"github.com/jan-hajek/ai/pkg/ai/csvx"
+	"github.com/jan-hajek/ai/pkg/ai/imagedataextractor"
+	"github.com/jan-hajek/ai/pkg/ai/imagex"
+	"github.com/jan-hajek/ai/pkg/ai/osx"
 )
 
 func (b *KnnStrategy) DataExtraction(ctx context.Context) error {

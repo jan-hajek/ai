@@ -3,24 +3,27 @@ package knn
 import (
 	"context"
 	"fmt"
-	"math"
-	"strconv"
+	"runtime"
 
-	"github.com/jelito/ai/pkg/ai/csvx"
-	"github.com/jelito/ai/pkg/ai/mathx"
-	"github.com/pkg/errors"
+	"github.com/jan-hajek/ai/pkg/ai/csvx"
+	"github.com/jan-hajek/ai/pkg/ai/mathx"
+	"github.com/jan-hajek/ai/pkg/ai/slices"
+	"github.com/jan-hajek/ai/pkg/worker"
+	"github.com/schollz/progressbar/v3"
 )
 
-func (b *KnnStrategy) TrainModel(_ context.Context) error {
+func (b *KnnStrategy) TrainModel(ctx context.Context) error {
 	trainData, err := csvx.ReadFromFile(b.settings.TrainingSetPath)
 	if err != nil {
 		return err
 	}
 
-	sets, err := splitIntoSets(trainData, b.settings.TrainModelBucketsCount)
+	allData, err := rowsToItems(trainData)
 	if err != nil {
 		return err
 	}
+
+	sets := slices.SplitByBucketCount(allData, b.settings.TrainModelBucketsCount)
 
 	results := newResults(b.settings.TrainModelKList, len(trainData))
 
@@ -34,7 +37,7 @@ func (b *KnnStrategy) TrainModel(_ context.Context) error {
 			len(validationSet),
 		)
 
-		testBucket(results, b.settings.TrainModelKList, trainingSet, validationSet)
+		testBucket(ctx, results, b.settings.TrainModelKList, validationSet, trainingSet)
 	}
 
 	bestAccuracy := 0.0
@@ -53,17 +56,32 @@ func (b *KnnStrategy) TrainModel(_ context.Context) error {
 	return nil
 }
 
-func testBucket(results *results, kList []int, trainingSet Set, validationSet Set) {
-	for _, item := range validationSet {
-		neighbors := nearestNeighbors(mathx.Max(kList...), item, trainingSet)
+func testBucket(ctx context.Context, results *results, kList []int, validationSet []Item, trainingSet []Item) {
+	bar := progressbar.Default(int64(len(validationSet)))
 
-		for _, k := range kList {
-			number := guessNumber(neighbors[:k])
-			if number == item.number {
-				results.correctKGuess(k)
+	maxK := mathx.Max(kList...)
+
+	worker.ProcessInParallel(
+		ctx,
+		validationSet,
+		func(ctx context.Context, item Item) (interface{}, error) {
+			neighbors := nearestNeighbors(maxK, item, trainingSet)
+
+			for _, k := range kList {
+				number := guessNumber(neighbors[:k])
+				if number == item.number {
+					results.correctKGuess(k)
+				}
 			}
-		}
-	}
+
+			bar.Add(1)
+
+			return nil, nil
+		},
+		worker.WithWorkersCount(runtime.NumCPU()),
+	)
+
+	bar.Exit()
 }
 
 func guessNumber(nearestNeighbors []Item) int {
@@ -82,65 +100,7 @@ func guessNumber(nearestNeighbors []Item) int {
 	return bestNumber
 }
 
-type Item struct {
-	number         int
-	sourceFileName string
-	fieldsAvgs     []float64
-}
-
-type Set []Item
-
-func splitIntoSets(trainData []csvx.Row, bucketCount int) (sets []Set, _ error) {
-	length := len(trainData)
-	setSize := int(math.Ceil(float64(length) / float64(bucketCount)))
-
-	counter := 0
-	set := Set{}
-	for index, row := range trainData {
-		number, err := strconv.Atoi(row[0])
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-
-		avgs, err := convertStringsIntoFloats(row[2:])
-		if err != nil {
-			return nil, err
-		}
-		set = append(set, Item{
-			number:         number,
-			sourceFileName: row[1],
-			fieldsAvgs:     avgs,
-		})
-
-		if index == length-1 {
-			sets = append(sets, set)
-			break
-		}
-
-		counter++
-		if counter == setSize {
-			sets = append(sets, set)
-			set = Set{}
-			counter = 0
-		}
-	}
-
-	return
-}
-
-func convertStringsIntoFloats(input []string) ([]float64, error) {
-	result := make([]float64, len(input))
-	for i, value := range input {
-		var err error
-		result[i], err = strconv.ParseFloat(value, 64)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-	}
-	return result, nil
-}
-
-func getTrainingAndValidationSet(i int, sets []Set) (validationSet, trainingSet Set) {
+func getTrainingAndValidationSet(i int, sets [][]Item) (validationSet, trainingSet []Item) {
 	validationSet = sets[i]
 
 	for _, set := range sets[:i] {

@@ -1,8 +1,11 @@
 package knn
 
+import "sync"
+
 type results struct {
 	validationDataSize int
 	kResults           map[int]*kResult
+	mx                 sync.Mutex
 }
 
 func newResults(kList []int, validationDataSize int) *results {
@@ -22,6 +25,8 @@ type kResult struct {
 }
 
 func (r *results) correctKGuess(k int) {
+	r.mx.Lock()
+	defer r.mx.Unlock()
 	r.kResults[k].correctGuessCount++
 }
 

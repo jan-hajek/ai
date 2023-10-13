@@ -4,15 +4,17 @@ import (
 	"math"
 	"sort"
 
-	"github.com/jelito/ai/pkg/ai/mathx"
+	"github.com/jan-hajek/ai/pkg/ai/mathx"
 )
 
-func nearestNeighbors(k int, item Item, set Set) []Item {
-	sort.Slice(set, func(i, j int) bool {
-		return getDistance(item, set[i]) < getDistance(item, set[j])
+func nearestNeighbors(k int, item Item, allItems []Item) []Item {
+	allItemsCopied := make([]Item, len(allItems))
+	copy(allItemsCopied, allItems)
+	sort.Slice(allItemsCopied, func(i, j int) bool {
+		return getDistance(item, allItemsCopied[i]) < getDistance(item, allItemsCopied[j])
 	})
 
-	return set[0:mathx.Min(k, len(set))]
+	return allItemsCopied[0:mathx.Min(k, len(allItemsCopied))]
 }
 
 func getDistance(validationItem Item, trainingItem Item) float64 {

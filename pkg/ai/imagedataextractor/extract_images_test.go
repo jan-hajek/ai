@@ -6,7 +6,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/jelito/ai/pkg/ai/imagex"
+	"github.com/jan-hajek/ai/pkg/ai/imagex"
 	"github.com/stretchr/testify/require"
 )
 

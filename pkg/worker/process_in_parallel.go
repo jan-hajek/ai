@@ -2,15 +2,43 @@ package worker
 
 import (
 	"context"
+	"runtime"
 	"sync"
+
+	"github.com/jan-hajek/ai/pkg/ai/mathx"
 )
+
+type config struct {
+	workersCount int
+}
+
+func WithWorkersCount(workersCount int) Option {
+	return func(cfg *config) {
+		cfg.workersCount = workersCount
+	}
+}
+
+func WithWorkersCountLimitedByCpu(workersCount int) Option {
+	return func(cfg *config) {
+		cfg.workersCount = mathx.Min(workersCount, runtime.NumCPU())
+	}
+}
+
+type Option = func(cfg *config)
 
 func ProcessInParallel[inputType any, outputType any](
 	ctx context.Context,
 	inputArray []inputType,
 	f func(context.Context, inputType) (outputType, error),
-	workersCount int,
+	auxOptions ...Option,
 ) (output []outputType, _ error) {
+	cfg := config{
+		workersCount: 3,
+	}
+	for _, opt := range auxOptions {
+		opt(&cfg)
+	}
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -21,7 +49,7 @@ func ProcessInParallel[inputType any, outputType any](
 	once := sync.Once{}
 
 	wg := sync.WaitGroup{}
-	for i := 0; i < workersCount; i++ {
+	for i := 0; i < cfg.workersCount; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

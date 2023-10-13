@@ -5,7 +5,7 @@ import (
 	"image"
 	"math"
 
-	"github.com/jelito/ai/pkg/ai/imagex"
+	"github.com/jan-hajek/ai/pkg/ai/imagex"
 )
 
 type ImageDataExtractor struct {

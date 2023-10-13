@@ -5,11 +5,11 @@ type Settings struct {
 	ExtraDataXFieldsCount   int
 	ExtraDataYFieldsCount   int
 	ExtractDataDestFilePath string
-	TestingSetPath          string
 	TrainingSetPath         string
 	TrainingSetRatio        float64
 	TrainModelKList         []int
 	TrainModelBucketsCount  int
+	TestingSetPath          string
 }
 type KnnStrategy struct {
 	settings Settings

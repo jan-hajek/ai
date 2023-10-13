@@ -6,9 +6,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/jelito/ai/pkg/ai/strategy"
-	"github.com/jelito/ai/pkg/ai/strategy/knn"
-	"github.com/jelito/ai/pkg/ai/strategy/random"
+	"github.com/jan-hajek/ai/pkg/ai/strategy"
+	"github.com/jan-hajek/ai/pkg/ai/strategy/knn"
+	"github.com/jan-hajek/ai/pkg/ai/strategy/random"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -27,8 +27,8 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(allCmd)
 	rootCmd.AddCommand(imageSplitCmd)
-	rootCmd.AddCommand(createModelCmd)
 	rootCmd.AddCommand(extractDataCmd)
 	rootCmd.AddCommand(prepareSetsCmd)
 	rootCmd.AddCommand(trainAlgorithmCmd)
@@ -47,15 +47,15 @@ func getStrategyByName(name string) (strategy.Strategy, error) {
 	case "knn":
 		return knn.New(
 			knn.Settings{
-				ExtraDataSourceDir:      path.Join(rootDir, "data", "migrateddata", "test"),
+				ExtraDataSourceDir:      path.Join(rootDir, "data", "migrateddata", "all"),
 				ExtraDataXFieldsCount:   3,
 				ExtraDataYFieldsCount:   3,
 				ExtractDataDestFilePath: path.Join(rootDir, "data", "knn", "imageData.csv"),
-				TestingSetPath:          path.Join(rootDir, "data", "knn", "trainingData.csv"),
-				TrainingSetPath:         path.Join(rootDir, "data", "knn", "testingData.csv"),
+				TrainingSetPath:         path.Join(rootDir, "data", "knn", "trainingData.csv"),
 				TrainingSetRatio:        0.8,
-				TrainModelKList:         []int{1, 2, 3, 4, 5, 6, 7, 8},
+				TrainModelKList:         []int{3, 4, 5, 6, 7, 8},
 				TrainModelBucketsCount:  5,
+				TestingSetPath:          path.Join(rootDir, "data", "knn", "testingData.csv"),
 			},
 		), nil
 	}

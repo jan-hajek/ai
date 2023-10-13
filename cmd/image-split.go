@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/jelito/ai/pkg/ai/imagemigrator"
+	"github.com/jan-hajek/ai/pkg/ai/imagemigrator"
 	"github.com/spf13/cobra"
 )
 

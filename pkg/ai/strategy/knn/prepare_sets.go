@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/jelito/ai/pkg/ai/csvx"
+	"github.com/jan-hajek/ai/pkg/ai/csvx"
 )
 
 func (b *KnnStrategy) PrepareSets(_ context.Context) error {
@@ -14,17 +14,17 @@ func (b *KnnStrategy) PrepareSets(_ context.Context) error {
 		return err
 	}
 
-	testingWriter, closeTestingFile, err := csvx.OpenFileForWriting(b.settings.TestingSetPath)
-	if err != nil {
-		return err
-	}
-	defer closeTestingFile()
-
 	trainingWriter, closeTrainingFile, err := csvx.OpenFileForWriting(b.settings.TrainingSetPath)
 	if err != nil {
 		return err
 	}
 	defer closeTrainingFile()
+
+	testingWriter, closeTestingFile, err := csvx.OpenFileForWriting(b.settings.TestingSetPath)
+	if err != nil {
+		return err
+	}
+	defer closeTestingFile()
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
