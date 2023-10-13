@@ -17,6 +17,7 @@ type mistakeDetails struct {
 	guessed     int
 	probGuessed float64
 	secondBest  int
+	neighbors []Item
 }
 
 func (b *KnnStrategy) TestModel(ctx context.Context) error {
@@ -44,10 +45,14 @@ func (b *KnnStrategy) TestModel(ctx context.Context) error {
 	correctPositiveGuessCount := make(map[int]int)
 	correctNegativeGuessCount := make(map[int]int)
 	totalCountsPerNum := make(map[int]int)
+	falseEights := make(map[int]int)
 	exampleOfMistakes := make(map[int]mistakeDetails)
 	maxMistakesToDisplay := 5
 
 	curMistakesToDisplay := 0
+
+	// FIXME
+	testData = testData[:200]
 
 	fmt.Printf("Testing model with k: %d, test set: %d, train set: %d \n", k, len(testData), len(trainData))
 
@@ -61,6 +66,9 @@ func (b *KnnStrategy) TestModel(ctx context.Context) error {
 		func(ctx context.Context, item Item) (interface{}, error) {
 			neighbors := nearestNeighbors(k, item, trainData)
 
+			fmt.Println(neighbors)
+
+
 			number, numberCount, secondBest := guessNumbers(neighbors[:k])
 
 			func() {
@@ -69,24 +77,31 @@ func (b *KnnStrategy) TestModel(ctx context.Context) error {
 
 				totalCountsPerNum[item.number]++
 
+				for i := 0; i < 10; i++ {
+					if i != number && i != item.number {
+						correctNegativeGuessCount[i]++
+					}
+				}
+
 				if number == item.number {
 					correctGuessCount++
 					correctPositiveGuessCount[number]++
 				} else {
-					for i := 0; i < 10; i++ {
-						if i != number {
-							correctNegativeGuessCount[number]++
-						}
+					if item.number == 8 {
+						falseEights[number]++
 					}
 					// create mistake example
-					if curMistakesToDisplay < maxMistakesToDisplay {
+					if curMistakesToDisplay < maxMistakesToDisplay && item.number == 8{
 						exampleOfMistakes[curMistakesToDisplay] = mistakeDetails{
 							path:        item.sourceFileName,
 							correct:     item.number,
 							guessed:     number,
 							probGuessed: float64(numberCount) / float64(k),
 							secondBest:  secondBest,
+							neighbors: neighbors,
 						}
+						fmt.Println(neighbors)
+
 						curMistakesToDisplay++
 					}
 				}
@@ -115,15 +130,20 @@ func (b *KnnStrategy) TestModel(ctx context.Context) error {
 			float64(correctNegativeGuessCount[i])/float64((len(testDataCsv))-totalCountsPerNum[i])*100,
 		)
 	}
+	fmt.Printf("False eights\n")
+	fmt.Println(falseEights)
+
+	fmt.Printf("Mistakes examples:\n")
 	for i := 0; i < maxMistakesToDisplay; i++ {
-		fmt.Printf(
-			"Mistakes examples:\n %s, Correct=%d, Guessed=%d, ProbGuessed=%.2f%%, SecondBest=%d\n",
+		fmt.Printf("%s, Correct=%d, Guessed=%d, ProbGuessed=%.2f%%, SecondBest=%d\n,",
 			exampleOfMistakes[i].path,
 			exampleOfMistakes[i].correct,
 			exampleOfMistakes[i].guessed,
 			exampleOfMistakes[i].probGuessed*100,
 			exampleOfMistakes[i].secondBest,
 		)
+		fmt.Printf("Neighbors: %v\n", exampleOfMistakes[i].neighbors)
+
 	}
 	return nil
 }
@@ -138,7 +158,11 @@ func guessNumbers(nearestNeighbors []Item) (int, int, int) {
 		mostCommon[n.number] = count
 		if count > bestCount {
 			bestCount = count
-			secondBest = bestNumber
+			if secondBest == -1 {
+				secondBest = n.number
+			} else if  bestNumber != n.number {
+				secondBest = bestNumber
+			}
 			bestNumber = n.number
 		}
 	}
