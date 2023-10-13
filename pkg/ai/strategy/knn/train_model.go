@@ -84,7 +84,7 @@ func testBucket(ctx context.Context, results *results, kList []int, validationSe
 	bar.Exit()
 }
 
-func guessNumber(nearestNeighbors []Item) int {
+func guessNumber(nearestNeighbors []Item) (int) {
 	mostCommon := make(map[int]int)
 	bestNumber := -1
 	bestCount := 0

@@ -22,6 +22,9 @@ func newResults(kList []int, validationDataSize int) *results {
 type kResult struct {
 	triesCount        int
 	correctGuessCount int
+	correct map[int]*float64
+	// probability that number correctly wasn't guessed
+	specificity map[int]*float64
 }
 
 func (r *results) correctKGuess(k int) {
