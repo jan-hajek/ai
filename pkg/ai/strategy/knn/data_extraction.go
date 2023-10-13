@@ -42,7 +42,7 @@ func (b *KnnStrategy) DataExtraction(ctx context.Context) error {
 			continue
 		}
 
-		row := []string{
+		row := csvx.Row{
 			strconv.Itoa(file.Number),
 			file.Name,
 		}

@@ -8,6 +8,8 @@ type Settings struct {
 	TestingSetPath          string
 	TrainingSetPath         string
 	TrainingSetRatio        float64
+	TrainModelKList         []int
+	TrainModelBucketsCount  int
 }
 type KnnStrategy struct {
 	settings Settings

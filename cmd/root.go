@@ -54,6 +54,8 @@ func getStrategyByName(name string) (strategy.Strategy, error) {
 				TestingSetPath:          path.Join(rootDir, "data", "knn", "trainingData.csv"),
 				TrainingSetPath:         path.Join(rootDir, "data", "knn", "testingData.csv"),
 				TrainingSetRatio:        0.8,
+				TrainModelKList:         []int{1, 2, 3, 4, 5, 6, 7, 8},
+				TrainModelBucketsCount:  5,
 			},
 		), nil
 	}
