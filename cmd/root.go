@@ -30,6 +30,7 @@ func init() {
 	rootCmd.AddCommand(allCmd)
 	rootCmd.AddCommand(imageSplitCmd)
 	rootCmd.AddCommand(extractDataCmd)
+	rootCmd.AddCommand(extractShapesCmd)
 	rootCmd.AddCommand(prepareSetsCmd)
 	rootCmd.AddCommand(trainAlgorithmCmd)
 	rootCmd.AddCommand(testAlgorithmCmd)

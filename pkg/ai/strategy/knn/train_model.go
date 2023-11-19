@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"strconv"
 
 	"github.com/jan-hajek/ai/pkg/ai/csvx"
 	"github.com/jan-hajek/ai/pkg/ai/mathx"
@@ -51,6 +52,19 @@ func (b *KnnStrategy) TrainModel(ctx context.Context) error {
 		}
 	}
 
+	// save false predictions
+	writer, closeFile, err := csvx.OpenFileForWriting("falsePredictions.csv")
+	if err != nil {
+		return err
+	}
+	defer closeFile()
+	for _, prediction := range results.falsePredictions {
+		record := []string{prediction.item.sourceFileName, strconv.Itoa(prediction.item.number), strconv.Itoa(prediction.predicted), strconv.Itoa(prediction.k)}
+		if err := writer(record); err != nil {
+			return err
+		}
+	}
+
 	fmt.Printf("Best accuracy: k=%d, accuracy=%.2f%%\n", bestAccuracyK, bestAccuracy*100)
 
 	return nil
@@ -71,6 +85,8 @@ func testBucket(ctx context.Context, results *results, kList []int, validationSe
 				number := guessNumber(neighbors[:k])
 				if number == item.number {
 					results.correctKGuess(k)
+				} else {
+					results.addFalsePrediction(item, number, k)
 				}
 			}
 
